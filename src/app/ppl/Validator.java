@@ -3,17 +3,18 @@ package app.ppl;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.Scanner;
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.HashMap;
 
 public class Validator {
 
     File symbolTable;
-    ArrayList<String> symbols;
+    HashMap<String, Lexeme> symbols;
 
     public Validator() {
         this.symbolTable = new File("symbl_table.txt");
-        this.symbols = new ArrayList<>();
+        this.symbols = new HashMap<>();
 
         try (BufferedReader reader = new BufferedReader(new FileReader(this.symbolTable))) {
             // Skip first 2 lines
@@ -23,18 +24,40 @@ public class Validator {
             String line;
 
             while ((line = reader.readLine()) != null) {
-                Scanner scanner = new Scanner(line);
+                BufferedReader lineReader = new BufferedReader(new StringReader(line));
 
-                this.symbols.add(scanner.next().trim());
+                String symbol = this.readColumn(lineReader);
+                String token = this.readColumn(lineReader);
+                String definition = this.readColumn(lineReader);
 
-                scanner.close();
+                this.symbols.put(symbol, new Lexeme(token, definition));
+
+                lineReader.close();
             }
+
+            System.out.println(this.symbols);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public boolean validate(String inputSymbol) {
+    private String readColumn(BufferedReader reader) throws IOException {
+        StringBuilder column = new StringBuilder();
+        int charcode;
+
+        while ((charcode = reader.read()) == 9) {/* skip extra tabs */}
+
+        column.append(Character.toChars(charcode));
+
+        while ((charcode = reader.read()) != -1 && charcode != 9) {
+            column.append(Character.toChars(charcode));
+        }
+
+        return column.toString();
+    }
+
+        /*
+    public String validate(String inputSymbol) {
         ArrayList<String> possibleMatches = new ArrayList<>();
 
         this.symbols.forEach(symbol -> {
@@ -43,9 +66,9 @@ public class Validator {
         });
 
         if (possibleMatches.isEmpty()) {
-            return false;
+            return "INVALID";
         } else {
-            boolean match = false;
+            String match = "INVALID";
             int i;
 
             for (String symbol : possibleMatches) {
@@ -61,9 +84,10 @@ public class Validator {
                         break;
                     }
                 }
-                
+
                 if (i == symbol.length()) {
-                    match = true;
+                    match = "VALID";
+
                     break;
                 }
             }
@@ -71,5 +95,5 @@ public class Validator {
             return match;
         }
     }
-
+        */
 }

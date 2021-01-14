@@ -1,15 +1,5 @@
-COMP
-CoMp
-+=
-||
-AND
-NOT
-!
-!!
-=
-==
-COIL
-LOOP
-IF
-if
-Else
+SHOW("Hello, World!");
+INT a;
+INT b = 5;
+CHAR c = 'a';
+CHAR d = c + 3;

@@ -35,5 +35,4 @@ public class InputScanner {
     public ArrayList<String> getSymbols() {
         return this.inputSymbols;
     }
-    
 }
