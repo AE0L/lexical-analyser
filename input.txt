@@ -1,4 +1,5 @@
 SHOW("Hello, World!");
+CoMp;
 INT a;
 INT b = 5;
 CHAR c = 'a';
