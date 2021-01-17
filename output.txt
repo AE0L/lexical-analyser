@@ -1,34 +1,25 @@
-LEXEME           TOKEN                 DEFINITION
+LEXEME  TOKEN                 DEFINITION
 
-SHOW             KEYWORD               Output statement
-(                LEFT_PAREN            Open parenthesis - start of expression
-"                DOUBLE_QUOTE          Double quotes - enclosing string constants
-Hello, World!    IDENTIFIER            identifier
-"                DOUBLE_QUOTE          Double quotes - enclosing string constants
-)                RIGHT_PAREN           Close parenthesis - end of expression
-;                DELIMETER             End of line symbol
-CoMp             IDENTIFIER            identifier
-;                DELIMETER             End of line symbol
-INT              DATATYPE              Integer data type
-a                IDENTIFIER            identifier
-;                DELIMETER             End of line symbol
-INT              DATATYPE              Integer data type
-b                IDENTIFIER            identifier
-=                ASSIGNMENT            Assignment symbol
-5                NUMBER                number
-;                DELIMETER             End of line symbol
-CHAR             DATATYPE              Character data type
-c                IDENTIFIER            identifier
-=                ASSIGNMENT            Assignment symbol
-'                SINGLE_QUOTE          Single quotes - enclosing character constants
-a                IDENTIFIER            identifier
-'                SINGLE_QUOTE          Single quotes - enclosing character constants
-;                DELIMETER             End of line symbol
-CHAR             DATATYPE              Character data type
-d                IDENTIFIER            identifier
-=                ASSIGNMENT            Assignment symbol
-c                IDENTIFIER            identifier
-+                OPERATOR_ARITHMETIC   Addition symbol
-3                NUMBER                number
-;                DELIMETER             End of line symbol
-EOL              EOL                   End Of File
+INT     DATATYPE              Integer data type
+a       IDENTIFIER            identifier
+=       ASSIGNMENT            Assignment symbol
+5       NUMBER                number
+;       DELIMETER             End of line symbol
+INT     DATATYPE              Integer data type
+b       IDENTIFIER            identifier
+=       ASSIGNMENT            Assignment symbol
+a       IDENTIFIER            identifier
++       OPERATOR_ARITHMETIC   Addition symbol
+10      NUMBER                number
+;       DELIMETER             End of line symbol
+CHAR    DATATYPE              Character data type
+c       IDENTIFIER            identifier
+=       ASSIGNMENT            Assignment symbol
+COMP    KEYWORD               Input statement
+(       LEFT_PAREN            Open parenthesis - start of expression
+)       RIGHT_PAREN           Close parenthesis - end of expression
+;       DELIMETER             End of line symbol
+SHOW    KEYWORD               Output statement
+(       LEFT_PAREN            Open parenthesis - start of expression
+a       IDENTIFIER            identifier
+,       INVALID               invalid symbol

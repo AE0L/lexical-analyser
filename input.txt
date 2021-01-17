@@ -1,6 +1,5 @@
-SHOW("Hello, World!");
-CoMp;
-INT a;
-INT b = 5;
-CHAR c = 'a';
-CHAR d = c + 3;
+INT a = 5;
+INT b = a + 10;
+CHAR c = COMP();
+
+SHOW(a, c + "Hello, World!");

@@ -2,7 +2,7 @@ package app.ppl;
 
 import java.util.ArrayList;
 
-public class Lexer {
+    public class Lexer {
 
     private String input;
     private Language lang;
@@ -20,15 +20,14 @@ public class Lexer {
         ArrayList<Token> tokens = new ArrayList<>();
         Token token = this.nextToken();
 
-        while (!token.getType().equals("INVALID")) {
+        while (!token.getType().equals("EOL") && !token.getType().equals("INVALID")) {
             tokens.add(token);
-
-            if (token.getType().equals("EOL")) {
-                break;
-            }
-
             token = this.nextToken();
         }
+
+        if (token.getType().equals("EOL") || token.getType().equals("INVALID")) {
+            tokens.add(token);
+        } 
 
         return tokens;
     }
@@ -63,7 +62,7 @@ public class Lexer {
             return this.lang.token(";");
         }
 
-        return new InvalidToken();
+        return new InvalidToken(Character.toString(currentChar));
     }
 
     public void skipWhiteSpaceAndNewLines() {
@@ -118,7 +117,7 @@ public class Lexer {
             return new Token(output.symbol, "NUMBER", "number");
         }
 
-        return new InvalidToken();
+        return new InvalidToken(output.symbol);
     }
 
     public Token recognizeOperator() {
@@ -132,7 +131,7 @@ public class Lexer {
             return this.recognizeLogicalOperator();
         }
 
-        return new InvalidToken();
+        return new InvalidToken(Character.toString(currentChar));
     }
 
     public Token recognizeArithmeticOperator() {
@@ -148,7 +147,7 @@ public class Lexer {
             case '^': return this.lang.token("^");
             case '%': return this.lang.token("%");
 
-            default: return new InvalidToken();
+            default: return new InvalidToken(Character.toString(currentChar));
         }
     }
 
@@ -171,7 +170,7 @@ public class Lexer {
                     ? this.lang.token("==")
                     : this.lang.token("=");
 
-            default: return new InvalidToken();
+            default: return new InvalidToken(Character.toString(currentChar));
         }
     }
 
@@ -197,7 +196,7 @@ public class Lexer {
             return this.lang.token("||");
         }
 
-        return new InvalidToken();
+        return new InvalidToken(Character.toString(currentChar));
     }
 
     public Token recognizeBrackets() {
@@ -227,7 +226,7 @@ public class Lexer {
 
                 return this.lang.token("\"");
 
-            default: return new InvalidToken();
+            default: return new InvalidToken(Character.toString(currentChar));
         }
     }
 }
