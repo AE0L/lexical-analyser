@@ -9,7 +9,7 @@ import java.util.ArrayList;
     private int position;
     private boolean quoteOpen;
 
-    public Lexer(Language lang, String input) {
+public Lexer(Language lang, String input) {
         this.lang = lang;
         this.input = input;
         this.position = 0;
