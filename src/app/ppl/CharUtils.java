@@ -2,10 +2,15 @@ package app.ppl;
 
 public class CharUtils {
 
-    private CharUtils() {}
+    private CharUtils() {
+    }
+
+    public static boolean isComment(char character) {
+        return character == '\\' || character == '#';
+    }
 
     public static boolean isOperator(char character) {
-        char[] validOperatorStarts = {'+', '-', '*', '/', '^', '%', '<', '>', '=', '!', '&', '|'};
+        char[] validOperatorStarts = { '+', '-', '*', '/', '^', '%', '<', '>', '=', '!', '&', '|' };
 
         for (char operator : validOperatorStarts) {
             if (operator == character) {
@@ -17,7 +22,7 @@ public class CharUtils {
     }
 
     public static boolean isArithmeticOperator(char character) {
-        char[] arithmeticSymbols = {'+', '-', '*', '/', '^', '%'};
+        char[] arithmeticSymbols = { '+', '-', '*', '/', '^', '%' };
 
         for (char operator : arithmeticSymbols) {
             if (operator == character) {
@@ -29,7 +34,7 @@ public class CharUtils {
     }
 
     public static boolean isRelationalOperator(char character) {
-        char[] relationalSymbols = {'<', '>', '='};
+        char[] relationalSymbols = { '<', '>', '=' };
 
         for (char operator : relationalSymbols) {
             if (operator == character) {
@@ -41,7 +46,7 @@ public class CharUtils {
     }
 
     public static boolean isLogicalOperator(char character) {
-        char[] logicalSymbols = {'!', '&', '|'};
+        char[] logicalSymbols = { '!', '&', '|' };
 
         for (char operator : logicalSymbols) {
             if (operator == character) {
@@ -51,9 +56,9 @@ public class CharUtils {
 
         return false;
     }
-    
+
     public static boolean isBrackets(char character) {
-        char[] validBrackets = {'(', ')', '{', '}', '\'', '\"'};
+        char[] validBrackets = { '(', ')', '{', '}', '\'', '\"' };
 
         for (char bracket : validBrackets) {
             if (bracket == character) {
@@ -64,5 +69,4 @@ public class CharUtils {
         return false;
     }
 
-   
 }

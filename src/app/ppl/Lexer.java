@@ -2,18 +2,22 @@ package app.ppl;
 
 import java.util.ArrayList;
 
-    public class Lexer {
+public class Lexer {
 
     private String input;
     private Language lang;
     private int position;
     private boolean quoteOpen;
+    private boolean singleCommentOpen;
+    private boolean multiCommentOpen;
 
-public Lexer(Language lang, String input) {
+    public Lexer(Language lang, String input) {
         this.lang = lang;
         this.input = input;
         this.position = 0;
         this.quoteOpen = false;
+        this.singleCommentOpen = false;
+        this.multiCommentOpen = false;
     }
 
     public ArrayList<Token> generateTokens() {
@@ -27,7 +31,7 @@ public Lexer(Language lang, String input) {
 
         if (token.getType().equals("EOL") || token.getType().equals("INVALID")) {
             tokens.add(token);
-        } 
+        }
 
         return tokens;
     }
@@ -35,6 +39,14 @@ public Lexer(Language lang, String input) {
     public Token nextToken() {
         if (this.position >= this.input.length()) {
             return new Token("EOL", "EOL", "End Of File");
+        }
+
+        if (this.singleCommentOpen) {
+            return this.recognizeSingleComment();
+        }
+
+        if (this.multiCommentOpen) {
+            return this.recognizeMultiComment();
         }
 
         this.skipWhiteSpaceAndNewLines();
@@ -57,6 +69,10 @@ public Lexer(Language lang, String input) {
             return this.recognizeBrackets();
         }
 
+        if (CharUtils.isComment(currentChar)) {
+            return this.recognizeComment();
+        }
+
         if (currentChar == ';') {
             this.position += 1;
             return this.lang.token(";");
@@ -70,7 +86,6 @@ public Lexer(Language lang, String input) {
 
         while (this.position < this.input.length() && (Character.isWhitespace(currentChar) || currentChar == '\n')) {
             this.position += 1;
-
             currentChar = this.input.charAt(this.position);
         }
     }
@@ -160,15 +175,9 @@ public Lexer(Language lang, String input) {
         this.position += hasEqualNext ? 2 : 1;
 
         switch (currentChar) {
-            case '<': return hasEqualNext
-                    ? this.lang.token("<=")
-                    : this.lang.token("<");
-            case '>': return hasEqualNext
-                    ? this.lang.token(">=")
-                    : this.lang.token(">");
-            case '=': return hasEqualNext
-                    ? this.lang.token("==")
-                    : this.lang.token("=");
+            case '<': return hasEqualNext ? this.lang.token("<=") : this.lang.token("<");
+            case '>': return hasEqualNext ? this.lang.token(">=") : this.lang.token(">");
+            case '=': return hasEqualNext ? this.lang.token("==") : this.lang.token("=");
 
             default: return new InvalidToken(Character.toString(currentChar));
         }
@@ -177,7 +186,7 @@ public Lexer(Language lang, String input) {
     public Token recognizeLogicalOperator() {
         int tmp = this.position;
         char currentChar = this.input.charAt(this.position);
-        
+
         if (currentChar == '!') {
             this.position += 1;
 
@@ -209,15 +218,15 @@ public Lexer(Language lang, String input) {
             case ')': return this.lang.token(")");
             case '{': return this.lang.token("{");
             case '}': return this.lang.token("}");
-            case '\'': 
+            case '\'':
                 if (this.quoteOpen) {
                     this.quoteOpen = false;
                 } else {
                     this.quoteOpen = true;
                 }
-               
+
                 return this.lang.token("\'");
-            case '\"': 
+            case '\"':
                 if (this.quoteOpen) {
                     this.quoteOpen = false;
                 } else {
@@ -229,4 +238,94 @@ public Lexer(Language lang, String input) {
             default: return new InvalidToken(Character.toString(currentChar));
         }
     }
+
+    public Token recognizeComment() {
+        char currentChar = this.input.charAt(this.position);
+        char nextChar = this.input.charAt(this.position + 1);
+
+        switch (currentChar) {
+            case '#':
+                if (nextChar == '#') {
+                    this.position += 2;
+
+                    this.singleCommentOpen = true;
+
+                    return this.lang.token("##");
+                } else if (nextChar == '\\') {
+                    this.position += 2;
+
+                    return this.lang.token("#\\");
+                }
+
+                break;
+
+            case '\\':
+                if (nextChar == '\\') {
+                    if (this.input.charAt(this.position + 2) == '#') {
+                        this.position += 3;
+
+                        this.multiCommentOpen = true;
+
+                        return this.lang.token("\\\\#");
+                    }
+                } else if (nextChar == '#') {
+                    this.position += 2;
+
+                    this.multiCommentOpen = true;
+
+                    return this.lang.token("\\#");
+                }
+
+                break;
+            
+            default: return new InvalidToken(Character.toString(currentChar));
+        }
+        
+        return new InvalidToken(Character.toString(currentChar));
+    }
+
+    public Token recognizeSingleComment() {
+        StringBuilder comment = new StringBuilder();
+        int tmp = this.position;
+
+        while (tmp < this.input.length()) {
+            char currentChar = this.input.charAt(tmp);
+
+            if (currentChar == '\n') {
+                this.singleCommentOpen = false;
+
+                break;
+            }
+
+            comment.append(currentChar);
+            tmp += 1;
+        }
+
+        this.position += comment.length();
+
+        return new Token(comment.toString().stripTrailing(), "SINGLE_COMMENT", "single line comment");
+    }
+
+    public Token recognizeMultiComment() {
+        StringBuilder comment = new StringBuilder();
+        int tmp = this.position;
+
+        while (tmp < this.input.length()) {
+            char currentChar = this.input.charAt(tmp);
+
+            if (currentChar == '#' && this.input.charAt(tmp + 1) == '\\') {
+                this.multiCommentOpen = false;
+
+                break;
+            }
+
+            comment.append(currentChar);
+            tmp += 1;
+        }
+
+        this.position += comment.length();
+
+        return new Token(comment.toString().strip(), "MULTI_COMMENT", "multi line comment");
+    }
+    
 }

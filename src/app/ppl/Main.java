@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -96,13 +97,28 @@ public class Main extends JFrame {
 		int maxTokenLength = 0;
 
 		for (Token token : tokens) {
-			if (token.getSymbol().length() > maxSymbolLength) {
-				maxSymbolLength = token.getSymbol().length();
+			if (token.getType().equals("MULTI_COMMENT")) {
+				BufferedReader br = new BufferedReader(new StringReader(token.getSymbol()));
+
+				String line = "";
+
+				while ((line = br.readLine()) != null) {
+					if (line.length() > maxSymbolLength) {
+						maxSymbolLength = line.length();
+					}
+				}
+
+				br.close();
+			} else {
+				if (token.getSymbol().length() > maxSymbolLength) {
+					maxSymbolLength = token.getSymbol().length();
+				}
+
+				if (token.getType().length() > maxTokenLength) {
+					maxTokenLength = token.getType().length();
+				}
 			}
 
-			if (token.getType().length() > maxTokenLength) {
-				maxTokenLength = token.getType().length();
-			}
 		}
 
 		maxSymbolLength += 3;
@@ -113,8 +129,30 @@ public class Main extends JFrame {
 		for (Token token : tokens) {
 			String symbol = token.getSymbol();
 			String type = token.getType();
+
 			try {
-				out.write(String.format("%1$-" + maxSymbolLength + "s %2$-" + maxTokenLength + "s", symbol, type));
+				if (type.equals("MULTI_COMMENT")) {
+					BufferedReader br = new BufferedReader(new StringReader(symbol));
+
+					String line = br.readLine();
+					String nextLine = br.readLine();
+
+					while (line != null) {
+						if (nextLine == null) {
+							out.write(String.format("%1$-" + maxSymbolLength + "s %2$-" + maxTokenLength + "s", line, type));
+						} else {
+							out.write(line + "\n");
+						}
+
+						line = nextLine;
+						nextLine = br.readLine();
+					}
+
+					br.close();
+				} else {
+					out.write(String.format("%1$-" + maxSymbolLength + "s %2$-" + maxTokenLength + "s", symbol, type));
+				}
+
 				out.write(token.getDefinition() + "\n");
 			} catch (IOException e) {
 				e.printStackTrace();

@@ -1,40 +1,42 @@
 Symbol	Token			Definition
 
-COMP	KEYWORD		Input statement
-SHOW	KEYWORD		Output statement
+COMP	KEYWORD			Input statement
+SHOW	KEYWORD			Output statement
 CHAR	DATATYPE		Character data type
 INT	DATATYPE		Integer data type
 REAL	DATATYPE		Float data type
 BOOL	DATATYPE		Boolean data type
 STR	DATATYPE		String data type
-IF	KEYWORD		Conditional statement
-ELSE	KEYWORD		Part of conditional statement
-COIL	KEYWORD		Looping statement
-REPS	KEYWORD	Part of looping statement
-+	OPERATOR_ARITHMETIC		Addition symbol
--	OPERATOR_ARITHMETIC		Subtraction symbol
-*	OPERATOR_ARITHMETIC		Multiplication symbol
-/	OPERATOR_ARITHMETIC		Division symbol
-%	OPERATOR_ARITHMETIC		Modulo symbol
-^	OPERATOR_ARITHMETIC		Exponential symbol
->	OPERATOR_RELATIONAL		Greater than symbol
->=	OPERATOR_RELATIONAL		Greater than or equal to symbol
-<	OPERATOR_RELATIONAL		Less than symbol
-<=	OPERATOR_RELATIONAL		Less than or equal to symbol
-==	OPERATOR_RELATIONAL		Equal to symbol
-<>	OPERATOR_RELATIONAL		Not Equal to symbol
-!	OPERATOR_LOGICAL		Logical NOT operator
-&&	OPERATOR_LOGICAL		Logical AND operator
-||	OPERATOR_LOGICAL		Logical OR operator
+IF	KEYWORD			Conditional statement
+ELSE	KEYWORD			Part of conditional statement
+COIL	KEYWORD			Looping statement
+REPS	KEYWORD			Part of looping statement
+TRUE	KEYWORD 		Boolean true value
+FALSE	KEYWORD			Boolean false value
++	OPERATOR_ARITHMETIC	Addition symbol
+-	OPERATOR_ARITHMETIC	Subtraction symbol
+*	OPERATOR_ARITHMETIC	Multiplication symbol
+/	OPERATOR_ARITHMETIC	Division symbol
+%	OPERATOR_ARITHMETIC	Modulo symbol
+^	OPERATOR_ARITHMETIC	Exponential symbol
+>	OPERATOR_RELATIONAL	Greater than symbol
+>=	OPERATOR_RELATIONAL	Greater than or equal to symbol
+<	OPERATOR_RELATIONAL	Less than symbol
+<=	OPERATOR_RELATIONAL	Less than or equal to symbol
+==	OPERATOR_RELATIONAL	Equal to symbol
+<>	OPERATOR_RELATIONAL	Not Equal to symbol
+!	OPERATOR_LOGICAL	Logical NOT operator
+&&	OPERATOR_LOGICAL	Logical AND operator
+||	OPERATOR_LOGICAL	Logical OR operator
 =	ASSIGNMENT		Assignment symbol
 ;	DELIMETER		End of line symbol
-(	LEFT_PAREN	Open parenthesis - start of expression
-)	RIGHT_PAREN	Close parenthesis - end of expression
-{	LEFT_CURLY	Open curly braces - start of block statement
-}	RIGHT_CURLY	Close curly braces - end of block statement
-'	SINGLE_QUOTE	Single quotes - enclosing character constants
-"	DOUBLE_QUOTE	Double quotes - enclosing string constants
-##	COMMENT		Single line comment
-\#	COMMENT	Start of multi-line comment
-#\	COMMENT	End of multi-line comment or document comment
-\\#	COMMENT	Start of document comment
+(	LEFT_PAREN		Open parenthesis - start of expression
+)	RIGHT_PAREN		Close parenthesis - end of expression
+{	LEFT_CURLY		Open curly braces - start of block statement
+}	RIGHT_CURLY		Close curly braces - end of block statement
+'	SINGLE_QUOTE		Single quotes - enclosing character constants
+"	DOUBLE_QUOTE		Double quotes - enclosing string constants
+##	SINGLE_COMMENT			Single line comment start
+\#	MULTI_START_COMMENT			Start of multi-line comment
+#\	MULTI_END_COMMENT			End of multi-line comment or document comment
+\\#	DOC_START_COMMENT			Start of document comment

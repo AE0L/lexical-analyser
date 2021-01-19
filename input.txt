@@ -1,5 +1,9 @@
-INT a = 5;
-INT b = a + 10;
-CHAR c = COMP();
+\\#
+INT a = 10;
+BOOL b = true;
+SHOW(a + ", Hello World!");
+INT c = 11;
+#\
 
-SHOW(a, c + "Hello, World!");
+INT c = 1;
+INT d = c + 5;
