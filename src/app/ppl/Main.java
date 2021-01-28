@@ -1,5 +1,8 @@
 package app.ppl;
 
+import java.awt.Color;
+import java.awt.EventQueue;
+import java.awt.Font;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -17,82 +20,142 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.SwingConstants;
+import javax.swing.border.EmptyBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class Main extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 
-	JTextArea txtArea;
-	JScrollPane scroll;
 
+	private JPanel panel;
+	public String file,path;
+	public static JTextArea areaOutput;
+	
 	public Main() {
-		this.txtArea = new JTextArea(30, 30);
-		this.scroll = new JScrollPane(txtArea);
-
-		txtArea.setEditable(false);
-		this.setSize(400, 650);
-		this.setVisible(true);
-		this.setLocationRelativeTo(null);
+		
+		
+		this.setTitle("Polytechnica Lexical Analyer");
+		this.setResizable(false);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-		JButton btnfile = new JButton("Select Input file and Validate");
-		JPanel panel = new JPanel();
-
-		panel.add(btnfile);
-
-		JLabel label = new JLabel("No file Selected");
-
-		panel.add(label);
-		panel.add(scroll);
-		this.add(panel);
-
-		btnfile.addActionListener(event -> {
-			String file;
-			String path;
+		
+		this.setBounds(100, 100, 1000, 700);
+		panel = new JPanel();
+		panel.setBorder(new EmptyBorder(5,5,5,5));	
+		this.setContentPane(panel);
+		panel.setLayout(null);
+		
+		JLabel poly = new JLabel("POLYTECHNICA LEXICAL ANALYZER");
+		poly.setForeground(Color.RED);
+		poly.setBounds(210, 30,550, 31);  
+		poly.setFont(new Font("Tahoma",Font.BOLD,25));
+		poly.setHorizontalAlignment(SwingConstants.CENTER);
+		panel.add(poly);
+		
+		JLabel inputLabel = new JLabel("INPUT");
+		inputLabel.setFont(new Font("Tahoma",Font.BOLD,18));
+		inputLabel.setBounds(50, 100, 88, 14);
+		panel.add(inputLabel);
+		
+		JTextArea areaInput = new JTextArea();
+		areaInput.setEditable(false);
+		areaInput.setLineWrap(false);
+		
+		JScrollPane scrollInput = new JScrollPane(areaInput);
+		scrollInput.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+		scrollInput.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		scrollInput.setBounds(50,120,387,314);
+		panel.add(scrollInput);
+		
+		JLabel outputLabel = new JLabel("OUTPUT");
+		outputLabel.setFont(new Font("Tahoma",Font.BOLD,18));
+		outputLabel.setBounds(550, 100, 88, 14);
+		panel.add(outputLabel);
+		
+		areaOutput = new JTextArea();
+		areaOutput.setEditable(false);
+		areaOutput.setLineWrap(false);
+		
+		JScrollPane scrollOutput = new JScrollPane(areaOutput);
+		scrollOutput.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+		scrollOutput.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		scrollOutput.setBounds(550,120,387,314);
+		panel.add(scrollOutput);
+		
+		JLabel select = new JLabel("SELECT INPUT FILE");
+		select.setFont(new Font("Tahoma",Font.PLAIN,18));
+		select.setHorizontalAlignment(SwingConstants.CENTER);
+		select.setBounds(300,475,375,14);
+		panel.add(select);
+		
+		JButton openFile = new JButton("OPEN FILE");
+		openFile.setBounds(435,500,105,25);
+		panel.add(openFile);
+		
+		JLabel status = new JLabel("No input file selected");
+		status.setHorizontalAlignment(SwingConstants.CENTER);
+		status.setBounds(420,525,130,25);
+		panel.add(status);
+		
+		JButton analyze = new JButton("ANALYZE");
+		analyze.setBounds(435, 575, 105, 25);
+		panel.add(analyze);
+		
+		openFile.addActionListener(event -> {
+		
 			int response;
 
 			JFileChooser chooser = new JFileChooser(".");
-
+			chooser.addChoosableFileFilter(new FileNameExtensionFilter("POLY File", "poly"));
+			chooser.setAcceptAllFileFilterUsed(false);
 			chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
 			response = chooser.showOpenDialog(null);
 
 			if (response == JFileChooser.APPROVE_OPTION) {
 
-				file = chooser.getSelectedFile().getName();
 				// print the content of input file in the textarea
 				path = chooser.getSelectedFile().getAbsolutePath();
 				try {
 					FileReader read = new FileReader(path);
 					BufferedReader br = new BufferedReader(read);
-					txtArea.read(br, null);
+					areaInput.read(br, null);
 					br.close();
-					txtArea.requestFocus();
+					areaInput.requestFocus();
 				} catch (Exception e1) {
 					JOptionPane.showMessageDialog(null, e1);
 				}
 
-				try {
-					valid(file);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-
-				label.setText(chooser.getSelectedFile().getName() + " file is selected.");
+				status.setText(chooser.getSelectedFile().getName() + " file is selected.");
 			} else {
-				label.setText("The user cancelled the operation.");
-				txtArea.setText("");
+				status.setText("The user cancelled the operation.");
+				areaInput.setText("");
 			}
 		});
+		
+		analyze.addActionListener(event ->{
+			
+			try {
+				valid(path);
+				JOptionPane.showMessageDialog(null,"Successfully Analyzed.","Analyzed",JOptionPane.INFORMATION_MESSAGE); 
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		});
+		
 
 	}
 
 	public static void valid(String fileName) throws IOException {
 		Language polytechnica = new Language("symbol_table.txt");
-		Lexer lexer = new Lexer(polytechnica, Files.readString(Paths.get(fileName)));
+		Lexer lexer = new Lexer(polytechnica, Files.readString(Paths.get(fileName)).trim());
 		ArrayList<Token> tokens = lexer.generateTokens();
 		FileWriter out = new FileWriter("output.txt");
-
+		
+		System.out.print(fileName);
 		int maxSymbolLength = 0;
 		int maxTokenLength = 0;
 
@@ -126,6 +189,9 @@ public class Main extends JFrame {
 
 		out.write(String.format("%1$-" + maxSymbolLength + "s %2$-" + maxTokenLength + "sDEFINITION\n\n", "LEXEME", "TOKEN"));
 
+		areaOutput.append("LEXEME \t\t TOKEN \t\t\t DEFINITION");
+		areaOutput.append("\n\n");
+		
 		for (Token token : tokens) {
 			String symbol = token.getSymbol();
 			String type = token.getType();
@@ -140,8 +206,14 @@ public class Main extends JFrame {
 					while (line != null) {
 						if (nextLine == null) {
 							out.write(String.format("%1$-" + maxSymbolLength + "s %2$-" + maxTokenLength + "s", line, type));
+
+							areaOutput.append(line);
+							areaOutput.append(" \t\t ");
+							areaOutput.append(type);
+							areaOutput.append(" \t\t ");
 						} else {
 							out.write(line + "\n");
+							areaOutput.append(line + "\n");
 						}
 
 						line = nextLine;
@@ -151,9 +223,14 @@ public class Main extends JFrame {
 					br.close();
 				} else {
 					out.write(String.format("%1$-" + maxSymbolLength + "s %2$-" + maxTokenLength + "s", symbol, type));
+					areaOutput.append(symbol);
+					areaOutput.append(" \t\t ");
+					areaOutput.append(type);
+					areaOutput.append(" \t\t ");
 				}
 
 				out.write(token.getDefinition() + "\n");
+				areaOutput.append(token.getDefinition() + "\n");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -163,7 +240,15 @@ public class Main extends JFrame {
 	}
 
 	public static void main(String[] args) {
-		new Main();
+		EventQueue.invokeLater(() -> {
+			try {
+				Main frame = new Main();
+				frame.setVisible(true);
+				frame.setLocationRelativeTo(null);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		});
 	}
 
 }

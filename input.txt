@@ -1,9 +1,0 @@
-\\#
-INT a = 10;
-BOOL b = true;
-SHOW(a + ", Hello World!");
-INT c = 11;
-#\
-
-INT c = 1;
-INT d = c + 5;

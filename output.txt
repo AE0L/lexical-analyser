@@ -1,21 +1,5 @@
-LEXEME                         TOKEN                 DEFINITION
+LEXEME  TOKEN       DEFINITION
 
-\\#                            DOC_START_COMMENT     Start of document comment
-INT a = 10;
-BOOL b = true;
-SHOW(a + ", Hello World!");
-INT c = 11;                    MULTI_COMMENT         multi line comment
-#\                             MULTI_END_COMMENT     End of multi-line comment or document comment
-INT                            DATATYPE              Integer data type
-c                              IDENTIFIER            identifier
-=                              ASSIGNMENT            Assignment symbol
-1                              NUMBER                number
-;                              DELIMETER             End of line symbol
-INT                            DATATYPE              Integer data type
-d                              IDENTIFIER            identifier
-=                              ASSIGNMENT            Assignment symbol
-c                              IDENTIFIER            identifier
-+                              OPERATOR_ARITHMETIC   Addition symbol
-5                              NUMBER                number
-;                              DELIMETER             End of line symbol
-EOL                            EOL                   End Of File
+SHOW    KEYWORD     Output statement
+;       DELIMETER   End of line symbol
+EOL     EOL         End Of File

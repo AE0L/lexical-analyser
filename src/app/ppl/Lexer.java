@@ -175,7 +175,14 @@ public class Lexer {
         this.position += hasEqualNext ? 2 : 1;
 
         switch (currentChar) {
-            case '<': return hasEqualNext ? this.lang.token("<=") : this.lang.token("<");
+            case '<': 
+                if (nextChar == '>') {
+                    this.position += 1;
+
+                    return this.lang.token("<>");
+                }
+
+                return hasEqualNext ? this.lang.token(">=") : this.lang.token("<");
             case '>': return hasEqualNext ? this.lang.token(">=") : this.lang.token(">");
             case '=': return hasEqualNext ? this.lang.token("==") : this.lang.token("=");
 

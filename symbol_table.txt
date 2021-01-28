@@ -11,7 +11,7 @@ IF	KEYWORD			Conditional statement
 ELSE	KEYWORD			Part of conditional statement
 COIL	KEYWORD			Looping statement
 REPS	KEYWORD			Part of looping statement
-TRUE	KEYWORD 		Boolean true value
+TRUE	KEYWORD			Boolean true value
 FALSE	KEYWORD			Boolean false value
 +	OPERATOR_ARITHMETIC	Addition symbol
 -	OPERATOR_ARITHMETIC	Subtraction symbol
