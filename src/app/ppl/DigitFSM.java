@@ -16,7 +16,7 @@ public class DigitFSM extends FiniteStateMachine {
         states.put("integer", 2);
         states.put("fracStart", 3);
         states.put("fracDigit", 4);
-        states.put("fraction", 4);
+        states.put("fraction", 5);
         states.put("NoNext", -1);
 
         acceptingStates.add(states.get("integer"));

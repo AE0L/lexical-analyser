@@ -113,7 +113,7 @@ public class Lexer {
 
         this.position += identifier.length();
 
-        if (this.lang.isKeyword(identifier.toString())) {
+        if (this.lang.isKeyword(identifier.toString()) || this.lang.isDataType(identifier.toString())) {
             return this.lang.token(identifier.toString());
         }
 

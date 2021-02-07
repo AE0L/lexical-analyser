@@ -12,11 +12,13 @@ public class Language {
 
     HashMap<String, Token> symbolTable;
     ArrayList<String> keywords;
+    ArrayList<String> dataTypes;
 
     public Language(String symbolTableFileName) {
         File symbolTableFile = new File(symbolTableFileName);
         this.symbolTable = new HashMap<>();
         this.keywords = new ArrayList<>();
+        this.dataTypes = new ArrayList<>();
 
         try (BufferedReader reader = new BufferedReader(new FileReader(symbolTableFile))) {
             // Skip first 2 lines
@@ -34,8 +36,12 @@ public class Language {
 
                 this.symbolTable.put(symbol, new Token(symbol, token, definition));
 
-                if (token.equals("KEYWORD") || token.equals("DATATYPE")) {
+                if (token.equals("KEYWORD")) {
                     this.keywords.add(symbol);
+                }
+
+                if (token.equals("DATATYPE")) {
+                    this.dataTypes.add(symbol);
                 }
 
                 lineReader.close();
@@ -64,9 +70,19 @@ public class Language {
         return this.symbolTable.get(key);
     }
 
-    public boolean isKeyword(String identifier) {
+    public boolean isKeyword(String symbol) {
         for (String keyword : this.keywords) {
-            if (keyword.equals(identifier)) {
+            if (keyword.equals(symbol)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public boolean isDataType(String symbol) {
+        for (String dataType : this.dataTypes) {
+            if (dataType.equals(symbol)) {
                 return true;
             }
         }

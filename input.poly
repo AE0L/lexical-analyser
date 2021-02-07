@@ -1,1 +1,12 @@
-SHOW; 
+STR name;
+INT age = 5 + ;
+
+SHOW("Enter name:");
+name = COMP();
+
+SHOW("Input age:");
+age COMP();
+
+IF(age >= 18 && age 65) {
+    SHOW("Allowed to go out");
+}

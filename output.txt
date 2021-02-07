@@ -1,5 +1,7 @@
-LEXEME  TOKEN       DEFINITION
-
-SHOW    KEYWORD     Output statement
-;       DELIMETER   End of line symbol
-EOL     EOL         End Of File
+STR name ;                                                       VALID
+INT age = 5 + ;                                                  INVALID
+SHOW ( " Enter name: " ) ;                                       VALID
+name = COMP ( ) ;                                                VALID
+SHOW ( " Input age: " ) ;                                        VALID
+age COMP ( ) ;                                                   INVALID
+IF ( age >= 18 && age 65 ) { SHOW ( " Allowed to go out " ) ; }  INVALID

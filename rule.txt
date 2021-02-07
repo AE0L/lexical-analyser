@@ -1,0 +1,43 @@
+stm         : var_stm
+              if_stm
+              coil_stm
+              show_stm
+              comp_stm
+
+stms        : stm*
+
+var_stm     : <data_type> <ident> = <exp> ;
+
+assign_stm  : <ident> = <exp>;
+
+if_stm      : IF ( <exp> ) { <stms> }
+              IF ( <exp> ) { <stms> } ELSE { <stms> }
+              IF ( <exp> ) { <stms> } ELSE <if_stm>
+
+coil_stm    : COIL ( <exp> REPS ) { <stms> }
+
+show_stm    : SHOW ( <exp> );
+
+comp_stm    : COMP ( ) ;
+
+<exp>       : <term>
+              <term> <op> <term>
+
+<term>      : <ident>
+              <const>
+
+<ident>     : any string not starting w/ digit
+
+<const>     : <digit>
+              <string>
+              <char>
+
+<op>        : <logic_op>
+              <arith_op>
+              <rel_op>
+
+<logic_op>  : !, &&, ||
+
+<arith_op>  : +, -, *, /, %, ^
+
+<rel_op>    : >, >=, <, <=, ==, <>
