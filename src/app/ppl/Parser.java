@@ -12,7 +12,7 @@ public class Parser {
         ParseUtils.setLang(lang);
     }
 
-    public ArrayList<Statement> parse() {
+    public ArrayList<ParseResult> parse() {
         return new ParseStatements(tokens).parse();
     }
 

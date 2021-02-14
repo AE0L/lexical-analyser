@@ -1,12 +1,38 @@
-STR name;
-INT age = 5 + ;
+int i;
+INT j;
+INT min;
+int temp;
+INT num = 10;
+int stop = 0;
+CHAR = a;
+COIL (10 REPS) {
+    IF (stop) {
+        arr[i] = 0;
+    } else {
+    arr [] = COMP ();
 
-SHOW("Enter name:");
-name = COMP();
-
-SHOW("Input age:");
-age COMP();
-
-IF(age >= 18 && age 65) {
-    SHOW("Allowed to go out");
+    IF(arr == 0) {
+        stop=1;}
+    }
+}
+COIL(i=0; i<(num-1); i++)
+{
+    min=i;
+    for(j=i+1;j<num;j++)
+    {
+        IF(arr[min]>arr[j])
+        {min=j;}
+    }
+    IF(min != i)
+    {
+    temp=arr[i];
+    arr[i]=arr[min]
+    arr[min]=temp;
+}
+    }
+SHOW ("Ascending order list is:\n");
+COIL(i=0;i<num;i++)
+{
+    IF(arr[i] != 0)
+    SHOW("%d\n",arr[i]);
 }

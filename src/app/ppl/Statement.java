@@ -1,18 +1,29 @@
 package app.ppl;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Statement extends ArrayList<Token> {
 
     private static final long serialVersionUID = 1L;
 
-    private boolean valid;
+    private ParseResult result;
 
-    public void setValid(boolean valid) {
-        this.valid = valid;
+    public Statement() {}
+
+    public Statement(List<Token> tokens) {
+        super(tokens);
+    }
+
+    public void setResult(ParseResult result) {
+        this.result = result;
+    }
+
+    public ParseResult getResult() {
+        return result;
     }
 
     public boolean isValid() {
-        return valid;
+        return result.isValid();
     }
 }

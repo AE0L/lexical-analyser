@@ -1,7 +1,6 @@
 package app.ppl;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class ParseStatements {
 
@@ -23,7 +22,7 @@ public class ParseStatements {
     private void advance() {
         curPos += 1;
 
-        if (curPos == stms.size() && !stms.get(curPos - 1).getType().equals("EOL")) {
+        if (curPos == stms.size()) {
             return;
         }
 
@@ -34,7 +33,7 @@ public class ParseStatements {
         return currToken.getSymbol().equals(token);
     }
 
-    private Statement getStatement() throws IndexOutOfBoundsException {
+    private Statement getStatement() {
         Statement stm = new Statement();
 
         while (hasTokens() && !is(";")) {
@@ -43,7 +42,12 @@ public class ParseStatements {
         }
 
         stm.add(currToken);
-        advance();
+
+        try {
+            advance();
+        } catch (IndexOutOfBoundsException e) {
+            e.printStackTrace();
+        }
 
         stmPos = curPos;
 
@@ -140,55 +144,46 @@ public class ParseStatements {
         }
     }
 
-    public ArrayList<Statement> parse() {
-        ArrayList<Statement> validity = new ArrayList<>();
+    public ArrayList<ParseResult> parse() {
+        ArrayList<ParseResult> errors = new ArrayList<>();
 
         while (hasTokens()) {
             String stm = ParseUtils.predict(currToken);
 
             if (!stm.equals("invalid")) {
                 if (stm.equals("var_stm")) {
-                    try {
-                        Statement var_stm = getStatement();
-                        boolean valid = ParseUtils.parseVarStatement(var_stm);
-                        var_stm.setValid(valid);
-                        validity.add(var_stm);
-                    } catch (IndexOutOfBoundsException e) {
-                        e.printStackTrace();
+                    // try {
+                        errors.addAll(ParseUtils.parseVarStatement(getStatement()));
+                    // } catch (IndexOutOfBoundsException e) {
+                    //     e.printStackTrace();
 
-                        return null;
-                    }
+                    //     return null;
+                    // }
                 } else if (stm.equals("if_stm")) {
-                    Statement if_stm = getIfStatement();
-                    boolean valid = ParseUtils.parseIfStatement(if_stm);
-                    if_stm.setValid(valid);
-                    validity.add(if_stm);
+                    errors.addAll(ParseUtils.parseIfStatement(getIfStatement()));
                 } else if (stm.equals("coil_stm")) {
-                    Statement coil_stm = getCoilStatement();
-                    boolean valid = ParseUtils.parseCoilStatement(coil_stm);
-                    coil_stm.setValid(valid);
-                    validity.add(coil_stm);
+                    errors.addAll(ParseUtils.parseCoilStatement(getCoilStatement()));
                 } else if (stm.equals("assign_stm")) {
-                    Statement assign_stm = getStatement();
-                    boolean valid = ParseUtils.parseAssignStatement(assign_stm);
-                    assign_stm.setValid(valid);
-                    validity.add(assign_stm);
+                    errors.addAll(ParseUtils.parseAssignStatement(getStatement()));
                 } else if (stm.equals("show_stm")) {
-                    Statement show_stm = getStatement();
-                    boolean valid = ParseUtils.parseShowStatement(show_stm);
-                    show_stm.setValid(valid);
-                    validity.add(show_stm);
+                    errors.addAll(ParseUtils.parseShowStatement(getStatement()));
                 } else if (stm.equals("single_comm")) {
                     skipSingleComment();
                 } else if (stm.equals("multi_comm")) {
                     skipMultiComment();
                 }
-            } else {
-                return validity;
+            // } else {
+            //     try {
+            //         validity.add(getStatement());
+            //     } catch (IndexOutOfBoundsException e) {
+            //         e.printStackTrace();
+            //         validity.add(new Statement(stms.subList(0, stms.size())));
+            //         return validity;
+            //     }
             }
         }
 
-        return validity;
+        return errors;
     }
 
 }

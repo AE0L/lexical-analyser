@@ -7,7 +7,11 @@ public class Lexer {
     private String input;
     private Language lang;
     private int position;
-    private boolean quoteOpen;
+    private int line;
+    private boolean singleQuoteReady;
+    private boolean doubleQuoteReady;
+    private boolean singleQuoteOpen;
+    private boolean doubleQuoteOpen;
     private boolean singleCommentOpen;
     private boolean multiCommentOpen;
 
@@ -15,7 +19,11 @@ public class Lexer {
         this.lang = lang;
         this.input = input;
         this.position = 0;
-        this.quoteOpen = false;
+        this.line = 1;
+        this.singleQuoteReady = false;
+        this.doubleQuoteReady = false;
+        this.singleQuoteOpen = false;
+        this.doubleQuoteOpen = false;
         this.singleCommentOpen = false;
         this.multiCommentOpen = false;
     }
@@ -24,12 +32,18 @@ public class Lexer {
         ArrayList<Token> tokens = new ArrayList<>();
         Token token = this.nextToken();
 
-        while (!token.getType().equals("EOL") && !token.getType().equals("INVALID")) {
+        while (!token.getType().equals("EOL") /*&& !token.getType().equals("INVALID")*/) {
+            if (token.getType().equals("INVALID")) {
+                position += 1;
+            }
+
+            token.setLine(line);
             tokens.add(token);
             token = this.nextToken();
         }
 
-        if (token.getType().equals("EOL") || token.getType().equals("INVALID")) {
+        if (token.getType().equals("EOL")) {
+            token.setLine(line);
             tokens.add(token);
         }
 
@@ -52,6 +66,10 @@ public class Lexer {
         this.skipWhiteSpaceAndNewLines();
 
         char currentChar = this.input.charAt(this.position);
+
+        if ((this.singleQuoteOpen || this.doubleQuoteOpen) && (!this.singleQuoteReady && !this.doubleQuoteReady)) {
+            return this.recognizeIdentifier();
+        }
 
         if (Character.isLetter(currentChar)) {
             return this.recognizeIdentifier();
@@ -78,7 +96,8 @@ public class Lexer {
             return this.lang.token(";");
         }
 
-        return new InvalidToken(Character.toString(currentChar));
+
+        return new InvalidToken(Character.toString(currentChar), line);
     }
 
     public void skipWhiteSpaceAndNewLines() {
@@ -86,6 +105,11 @@ public class Lexer {
 
         while (this.position < this.input.length() && (Character.isWhitespace(currentChar) || currentChar == '\n')) {
             this.position += 1;
+
+            if (currentChar == '\n') {
+                this.line += 1;
+            }
+
             currentChar = this.input.charAt(this.position);
         }
     }
@@ -97,11 +121,17 @@ public class Lexer {
         while (tmp < this.input.length()) {
             char currentChar = this.input.charAt(tmp);
 
-            if (currentChar == '\'' || currentChar == '\"') {
+            if (currentChar == '\'' && this.singleQuoteOpen) {
+                this.singleQuoteReady = true;
+
+                break;
+            } else if (currentChar == '\"' && this.doubleQuoteOpen) {
+                this.doubleQuoteReady = true;
+
                 break;
             }
 
-            if (!this.quoteOpen) {
+            if (!this.singleQuoteOpen && !this.doubleQuoteOpen) {
                 if (!(Character.isLetter(currentChar) || Character.isDigit(currentChar) || currentChar == '_')) {
                     break;
                 }
@@ -115,6 +145,14 @@ public class Lexer {
 
         if (this.lang.isKeyword(identifier.toString()) || this.lang.isDataType(identifier.toString())) {
             return this.lang.token(identifier.toString());
+        }
+
+        if (this.singleQuoteReady) {
+            return new Token(identifier.toString(), "CHAR_CONST", "Character constant");
+        }
+
+        if (this.doubleQuoteReady) {
+            return new Token(identifier.toString(), "STR_CONST", "String constant");
         }
 
         return new Token(identifier.toString(), "IDENTIFIER", "identifier");
@@ -132,7 +170,7 @@ public class Lexer {
             return new Token(output.symbol, "NUMBER", "number");
         }
 
-        return new InvalidToken(output.symbol);
+        return new InvalidToken(output.symbol, line);
     }
 
     public Token recognizeOperator() {
@@ -146,7 +184,7 @@ public class Lexer {
             return this.recognizeLogicalOperator();
         }
 
-        return new InvalidToken(Character.toString(currentChar));
+        return new InvalidToken(Character.toString(currentChar), line);
     }
 
     public Token recognizeArithmeticOperator() {
@@ -162,7 +200,7 @@ public class Lexer {
             case '^': return this.lang.token("^");
             case '%': return this.lang.token("%");
 
-            default: return new InvalidToken(Character.toString(currentChar));
+            default: return new InvalidToken(Character.toString(currentChar), line);
         }
     }
 
@@ -186,7 +224,7 @@ public class Lexer {
             case '>': return hasEqualNext ? this.lang.token(">=") : this.lang.token(">");
             case '=': return hasEqualNext ? this.lang.token("==") : this.lang.token("=");
 
-            default: return new InvalidToken(Character.toString(currentChar));
+            default: return new InvalidToken(Character.toString(currentChar), line);
         }
     }
 
@@ -212,7 +250,7 @@ public class Lexer {
             return this.lang.token("||");
         }
 
-        return new InvalidToken(Character.toString(currentChar));
+        return new InvalidToken(Character.toString(currentChar), line);
     }
 
     public Token recognizeBrackets() {
@@ -226,23 +264,25 @@ public class Lexer {
             case '{': return this.lang.token("{");
             case '}': return this.lang.token("}");
             case '\'':
-                if (this.quoteOpen) {
-                    this.quoteOpen = false;
+                if (this.singleQuoteOpen && this.singleQuoteReady) {
+                    this.singleQuoteOpen = false;
+                    this.singleQuoteReady = false;
                 } else {
-                    this.quoteOpen = true;
+                    this.singleQuoteOpen = true;
                 }
 
                 return this.lang.token("\'");
             case '\"':
-                if (this.quoteOpen) {
-                    this.quoteOpen = false;
+                if (this.doubleQuoteOpen && this.doubleQuoteReady) {
+                    this.doubleQuoteOpen = false;
+                    this.doubleQuoteReady = false;
                 } else {
-                    this.quoteOpen = true;
+                    this.doubleQuoteOpen = true;
                 }
 
                 return this.lang.token("\"");
 
-            default: return new InvalidToken(Character.toString(currentChar));
+            default: return new InvalidToken(Character.toString(currentChar), line);
         }
     }
 
@@ -284,11 +324,9 @@ public class Lexer {
                 }
 
                 break;
-            
-            default: return new InvalidToken(Character.toString(currentChar));
         }
-        
-        return new InvalidToken(Character.toString(currentChar));
+
+        return new InvalidToken(Character.toString(currentChar), line);
     }
 
     public Token recognizeSingleComment() {

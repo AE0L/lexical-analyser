@@ -6,6 +6,9 @@ public class ParseUtils {
 
     public static Language lang = null;
 
+    private ParseUtils() {
+    }
+
     public static void setLang(Language newLang) {
         lang = newLang;
     }
@@ -21,7 +24,11 @@ public class ParseUtils {
     }
 
     private static boolean is(String symbol, ArrayList<Token> stm, int index) {
-        return stm.get(index).getSymbol().equals(symbol);
+        try {
+            return stm.get(index).getSymbol().equals(symbol);
+        } catch (IndexOutOfBoundsException e) {
+            return false;
+        }
     }
 
     private static boolean isType(String type, ArrayList<Token> stm, int index) {
@@ -29,47 +36,69 @@ public class ParseUtils {
     }
 
     // <data_type> <ident> = <exp>
-    public static boolean parseVarStatement(ArrayList<Token> stm) {
+    public static ArrayList<ParseResult> parseVarStatement(ArrayList<Token> stm) {
+        ArrayList<ParseResult> results = new ArrayList<>();
+
         if (!lang.isDataType(stm.get(0).getSymbol())) {
-            return false;
+            results.add(new ParseResult(false, stm.get(0), "Invalid data type"));
+
+            return results;
         }
 
         if (!isType("IDENTIFIER", stm, 1)) {
-            return false;
+            results.add(new ParseResult(false, stm.get(1), "Unable to resolve identifier"));
+
+            return results;
+        }
+
+        if (is(";", stm, 2)) {
+            return results;
         }
 
         if (!is("=", stm, 2)) {
-            if (is(";", stm, 2)) {
-                return true;
-            } else {
-                return false;
+            ParseResult result = new ParseResult();
+            result.setValid(false);
+            result.setLine(stm.get(1));
+
+            if (!is(";", stm, 2)) {
+                result.setMessage("Invalid syntax: expected \";\"");
+                results.add(result);
+
+                return results;
             }
+
+            result.setMessage("Invalid syntax: expected \"=\"");
+            results.add(result);
+
+            return results;
         }
 
-        if (!parseExp(new ArrayList<Token>(stm.subList(3, stm.size() - 1)))) {
-            return false;
-        }
+        results.addAll(parseExp(new ArrayList<>(stm.subList(3, stm.size() - 1))));
 
-        return true;
+        return results;
     }
 
     // IF ( <exp> ) { <stms> } [ELSE [IF ( <exp> )] { <stms> }]
-    public static boolean parseIfStatement(ArrayList<Token> stm) {
+    public static ArrayList<ParseResult> parseIfStatement(ArrayList<Token> stm) {
+        ArrayList<ParseResult> results = new ArrayList<>();
+
         if (!is("IF", stm, 0)) {
-            return false;
+            results.add(new ParseResult(false, stm.get(0), "Invalid syntax: expected \"IF\""));
+
+            return results;
         }
 
         if (!is("(", stm, 1)) {
-            return false;
+            results.add(new ParseResult(false, stm.get(1), "Invalid syntax: expected \"(\""));
+
+            return results;
         }
 
         int tmp = 2;
         int closures = 1;
 
         for (; tmp < stm.size(); tmp++) {
-            if (is("COMP", stm, tmp)) {
-                closures += 1;
-            } else if (is(")", stm, tmp)) {
+            if (is(")", stm, tmp)) {
                 closures -= 1;
 
                 if (closures == 0) {
@@ -79,17 +108,19 @@ public class ParseUtils {
         }
 
         if (tmp == stm.size()) {
-            return false;
+            results.add(new ParseResult(false, stm.get(tmp - 1), "Invalid syntax: expected \")\""));
+
+            return results;
         }
 
-        if (!parseGroup(new ArrayList<Token>(stm.subList(1, tmp + 1)))) {
-            return false;
-        }
+        results.addAll(parseGroup(new ArrayList<>(stm.subList(1, tmp + 1))));
 
         tmp += 1;
 
         if (!is("{", stm, tmp)) {
-            return false;
+            results.add(new ParseResult(false, stm.get(tmp - 1), "Invalid syntax: expected \"{\""));
+
+            return results;
         }
 
         tmp += 1;
@@ -109,12 +140,18 @@ public class ParseUtils {
             }
         }
 
-        if (tmp == stm.size()) {
-            return false;
+        ArrayList<ParseResult> ifStmRes = new ParseStatements(new ArrayList<>(stm.subList(tmp2, tmp - 1))).parse();
+
+        if (ifStmRes == null) {
+            results.add(new ParseResult(false, stm.get(tmp2), "Invalid statements"));
         }
 
-        if (new ParseStatements(new ArrayList<Token>(stm.subList(tmp2, tmp))).parse() == null) {
-            return false;
+        results.addAll(ifStmRes);
+
+        if (tmp == stm.size()) {
+            results.add(new ParseResult(false, stm.get(tmp - 1), "Invalid syntax: expected \"}\""));
+
+            return results;
         }
 
         tmp += 1;
@@ -123,9 +160,7 @@ public class ParseUtils {
             tmp += 1;
 
             if (is("IF", stm, tmp)) {
-                if (!parseIfStatement(new ArrayList<Token>(stm.subList(tmp, stm.size())))) {
-                    return false;
-                }
+                results.addAll(parseIfStatement(new ArrayList<>(stm.subList(tmp, stm.size()))));
             } else if (is("{", stm, tmp)) {
                 tmp += 1;
                 tmp2 = tmp;
@@ -144,54 +179,72 @@ public class ParseUtils {
                 }
 
                 if (tmp == stm.size()) {
-                    return false;
+                    results.add(new ParseResult(false, stm.get(tmp - 1), "Invalid syntax: expected \"}\""));
+
+                    return results;
                 }
 
-                if (new ParseStatements(new ArrayList<Token>(stm.subList(tmp2, tmp))).parse() == null) {
-                    return false;
+                ArrayList<ParseResult> elseStmRes = new ParseStatements(new ArrayList<>(stm.subList(tmp2, tmp))).parse();
+
+                if (elseStmRes == null) {
+                    results.add(new ParseResult(false, stm.get(tmp2), "Invalid statements"));
                 }
+
+                results.addAll(elseStmRes);
             }
         }
 
-        return true;
+        return results;
     }
 
     // COIL ( <exp> REPS ) { <stms> }
-    public static boolean parseCoilStatement(ArrayList<Token> stm) {
+    public static ArrayList<ParseResult> parseCoilStatement(ArrayList<Token> stm) {
+        ArrayList<ParseResult> results = new ArrayList<>();
+
         if (!is("COIL", stm, 0)) {
-            return false;
+            results.add(new ParseResult(false, stm.get(0), "Invalid syntax: expected \"COIL\""));
+
+            return results;
         }
 
         if (!is("(", stm, 1)) {
-            return false;
+            results.add(new ParseResult(false, stm.get(1), "Invalid syntax: expected \"(\""));
+
+            return results;
         }
 
         int tmp = 2;
 
         for (; tmp < stm.size(); tmp++) {
-            if (is("REPS", stm, tmp)) {
+            if (is(")", stm, tmp)) {
                 break;
             }
         }
 
-        if (tmp == stm.size() || tmp == 2) {
-            return false;
+        if (tmp == stm.size()) {
+            results.add(new ParseResult(false, stm.get(tmp - 1), "Invalid syntax: expected \")\""));
+
+            return results;
+        } 
+
+        if (!stm.get(tmp - 1).getSymbol().equals("REPS")) {
+            results.add(new ParseResult(false, stm.get(tmp - 1), "Invalid syntax: expected \"REPS\""));
         }
 
-        if (!parseExp(new ArrayList<Token>(stm.subList(2, tmp)))) {
-            return false;
-        }
+        results.addAll(parseExp(new ArrayList<>(stm.subList(2, tmp - 1))));
 
-        tmp += 2;
+        tmp += 1;
 
         if (!is("{", stm, tmp)) {
-            return false;
+            results.add(new ParseResult(false, stm.get(tmp), "Invalid syntax: expected \"{\""));
+
+            return results;
         }
 
         tmp += 1;
 
         int tmp2 = tmp;
-        
+
         int closures = 1;
 
         for (; tmp < stm.size(); tmp++) {
@@ -207,45 +260,71 @@ public class ParseUtils {
         }
 
         if (tmp == stm.size()) {
-            return false;
+            results.add(new ParseResult(false, stm.get(tmp - 1), "Invalid syntax: expected \"}\""));
+
+            return results;
         }
 
-        if (new ParseStatements(new ArrayList<Token>(stm.subList(tmp2, tmp))).parse() == null) {
-            return false;
+        ArrayList<ParseResult> stmRes = new ParseStatements(new ArrayList<>(stm.subList(tmp2, tmp))).parse();
+
+        if (stmRes == null) {
+            results.add(new ParseResult(false, stm.get(tmp2), "Invalid statements"));
+
+            return results;
         }
 
-        return true;
+        results.addAll(stmRes);
+
+        return results;
     }
 
     // <ident> = <exp>;
-    public static boolean parseAssignStatement(ArrayList<Token> stm) {
-        if (stm.size() < 4) {
-            return false;
-        }
+    public static ArrayList<ParseResult> parseAssignStatement(ArrayList<Token> stm) {
+        ArrayList<ParseResult> results = new ArrayList<>();
 
         if (!isType("IDENTIFIER", stm, 0)) {
-            return false;
+            results.add(new ParseResult(false, stm.get(0), "Unable to resolve variable"));
+
+            return results;
+        }
+
+        if (is("(", stm, 1)) {
+            results.add(new ParseResult(false, stm.get(0), "Invalid keyword"));
+
+            return results;
+        }
+
+        if (isType("IDENTIFIER", stm, 1)) {
+            results.add(new ParseResult(false, stm.get(0), "data type cannot be resolved"));
+
+            return results;
         }
 
         if (!is("=", stm, 1)) {
-            return false;
+            results.add(new ParseResult(false, stm.get(1), "Invalid syntax: Expected \"=\""));
+
+            return results;
         }
 
-        if (!parseExp(new ArrayList<Token>(stm.subList(2, stm.size() - 1)))) {
-            return false;
-        }
+        results.addAll(parseExp(new ArrayList<>(stm.subList(2, stm.size() - 1))));
 
-        return true;
+        return results;
     }
 
     // SHOW ( <exp> );
-    public static boolean parseShowStatement(ArrayList<Token> stm) {
+    public static ArrayList<ParseResult> parseShowStatement(ArrayList<Token> stm) {
+        ArrayList<ParseResult> results = new ArrayList<>();
+
         if (!is("SHOW", stm, 0)) {
-            return false;
+            results.add(new ParseResult(false, stm.get(0), "Invalid syntax: expected \"SHOW\""));
+
+            return results;
         }
 
         if (!is("(", stm, 1)) {
-            return false;
+            results.add(new ParseResult(false, stm.get(1), "Invalid syntax: expected \"(\""));
+
+            return results;
         }
 
         int tmp = 1;
@@ -258,121 +337,150 @@ public class ParseUtils {
 
         tmp += 1;
 
-        if (tmp == stm.size()) {
-            return false;
+        if (tmp >= stm.size()) {
+            results.add(new ParseResult(false, stm.get(stm.size() - 1), "Invalid syntax: \")\" not found"));
+
+            return results;
         }
 
-        if (!parseGroup(new ArrayList<Token>(stm.subList(1, tmp)))) {
-            return false;
-        }
+        results.addAll(parseGroup(new ArrayList<>(stm.subList(1, tmp))));
 
-        return true;
+        return results;
     }
 
     // ( <exp> )
-    public static boolean parseGroup(ArrayList<Token> stm) {
+    public static ArrayList<ParseResult> parseGroup(ArrayList<Token> stm) {
+        ArrayList<ParseResult> results = new ArrayList<>();
+
         if (!is("(", stm, 0)) {
-            return false;
+            results.add(new ParseResult(false, stm.get(0), "Invalid syntax: expected \"(\""));
         }
 
         if (!is(")", stm, stm.size() - 1)) {
-            return false;
+            results.add(new ParseResult(false, stm.get(stm.size() - 1), "Invalid syntax: expected \")\""));
         }
 
-        if (!parseExp(new ArrayList<Token>(stm.subList(1, stm.size() - 1)))) {
-            return false;
-        }
+        results.addAll(parseExp(new ArrayList<>(stm.subList(1, stm.size() - 1))));
 
-        return true;
+        return results;
     }
 
     // <term> (<op> <term>)
-    public static boolean parseExp(ArrayList<Token> stm) {
-        // System.out.print("Parsing <exp>: ");
-        // printStatement(stm);
+    public static ArrayList<ParseResult> parseExp(ArrayList<Token> stm) {
+        ArrayList<ParseResult> results = new ArrayList<>();
 
         if (is("COMP", stm, 0)) {
             if (!is("(", stm, 1)) {
-                return false;
-            }
+                results.add(new ParseResult(false, stm.get(1), "Invalid syntax: expected \"(\""));
+                
+                return results;
+            } else if (!is(")", stm, 2)) {
+                results.add(new ParseResult(false, stm.get(1), "Invalid syntax: expected \")\""));
 
-            if (!is(")", stm, 2)) {
-                return false;
+                return results;
             }
 
             if (stm.size() > 3) {
-                if (!isType("OPERATOR_ARITHMETIC", stm, 3) && !isType("OPERATOR_RELATIONAL", stm, 3)
+                if (!isType("OPERATOR_ARITHMETIC", stm, 3) 
+                        && !isType("OPERATOR_RELATIONAL", stm, 3)
                         && !isType("OPERATOR_LOGICAL", stm, 3)) {
-                    return false;
+
+                    results.add(new ParseResult(false, stm.get(3), "Invalid expression"));
+
+                    return results;
                 }
 
-                if (!parseExp(new ArrayList<Token>(stm.subList(4, stm.size())))) {
-                    return false;
+                if (stm.size() < 4) {
+                    results.add(new ParseResult(false, stm.get(3), "Invalid expression"));
+
+                    return results;
                 }
+
+                results.addAll(parseExp(new ArrayList<>(stm.subList(4, stm.size()))));
             }
         } else if (is("\"", stm, 0) || is("\'", stm, 0)) {
             if (stm.size() < 3) {
-                return false;
-            }
+                results.add(new ParseResult(false, stm.get(0), "Invalid syntax: quotes are not properly closed"));
+
+                return results;
+            } 
             
-            if (!parseTerm(new ArrayList<Token>(stm.subList(0, 3)))) {
-                return false;
+            ParseResult termRes = parseTerm(new ArrayList<>(stm.subList(0, 3)));
+
+            if (!termRes.isValid()) {
+                results.add(termRes);
+
+                return results;
             }
 
             if (stm.size() > 3) {
-                if (!isType("OPERATOR_ARITHMETIC", stm, 3) && !isType("OPERATOR_RELATIONAL", stm, 3)
+                if (!isType("OPERATOR_ARITHMETIC", stm, 3) 
+                        && !isType("OPERATOR_RELATIONAL", stm, 3)
                         && !isType("OPERATOR_LOGICAL", stm, 3)) {
-                    return false;
+
+                    results.add(new ParseResult(false, stm.get(3), "Invalid expression"));
+
+                    return results;
                 }
 
-                if (!parseExp(new ArrayList<Token>(stm.subList(4, stm.size())))) {
-                    return false;
+
+                if (stm.size() < 4) {
+                    results.add(new ParseResult(false, stm.get(3), "Invalid expression"));
+
+                    return results;
                 }
+
+                results.addAll(parseExp(new ArrayList<>(stm.subList(4, stm.size()))));
             }
         } else {
             if (!parseTerm(stm.get(0))) {
-                return false;
+                results.add(new ParseResult(false, stm.get(0), "Invalid expression"));
+
+                return results;
             }
 
             if (stm.size() > 1) {
-                if (!isType("OPERATOR_ARITHMETIC", stm, 1) && !isType("OPERATOR_RELATIONAL", stm, 1)
+                if (!isType("OPERATOR_ARITHMETIC", stm, 1)
+                        && !isType("OPERATOR_RELATIONAL", stm, 1)
                         && !isType("OPERATOR_LOGICAL", stm, 1)) {
-                    return false;
+
+                    results.add(new ParseResult(false, stm.get(1), "Invalid expression"));
+
+                    return results;
                 }
 
-                if (!(stm.size() > 2)) {
-                    return false;
+                if (stm.size() < 2) {
+                    results.add(new ParseResult(false, stm.get(1), "Invalid expression"));
+
+                    return results;
                 }
 
-                if (!parseExp(new ArrayList<Token>(stm.subList(2, stm.size())))) {
-                    return false;
-                }
+                results.addAll(parseExp(new ArrayList<>(stm.subList(2, stm.size()))));
             }
         }
 
-        return true;
+        return results;
     }
 
     // " <ident> " | ' <ident> '
-    public static boolean parseTerm(ArrayList<Token> stm) {
-        // System.out.print("Parsing <term>: ");
-        // printStatement(stm);
-
-        if (stm.size() < 3) {
-            return false;
-        }
-
+    public static ParseResult parseTerm(ArrayList<Token> stm) {
         if (is("\"", stm, 0)) {
-            if (!isType("IDENTIFIER", stm, 1) && !is("\"", stm, 2)) {
-                return false;
+            if (!isType("STR_CONST", stm, 1)) {
+                return new ParseResult(false, stm.get(1), "Invalid string value");
+            } else if (!is("\"", stm, 2)) {
+                return new ParseResult(false, stm.get(2), "Invalid syntax: quotes are not properly closed");
             }
         } else if (is("\'", stm, 0)) {
-            if (!isType("IDENTIFIER", stm, 1) && !is("\'", stm, 2) && !(stm.get(1).getSymbol().length() == 1)) {
-                return false;
+            if (!isType("CHAR_CONST", stm, 1)) {
+                return new ParseResult(false, stm.get(1), "Invalid string value");
+            } else if (!is("\'", stm, 2)) {
+                return new ParseResult(false, stm.get(2), "Invalid syntax: quotes are not properly closed");
+            } else if (stm.get(1).getSymbol().length() != 1) {
+                return new ParseResult(false, stm.get(1), "Invalid character value");
             }
         }
 
-        return true;
+        return new ParseResult(true);
     }
 
     // <ident> | <number> | TRUE | FALSE
@@ -409,6 +517,5 @@ public class ParseUtils {
 
         return "invalid";
     }
-
 
 }

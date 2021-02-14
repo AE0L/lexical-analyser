@@ -154,11 +154,10 @@ public class Main extends JFrame {
         ArrayList<Token> tokens = lexer.generateTokens();
         FileWriter out = new FileWriter("output.txt");
         Parser parser = new Parser(tokens, polytechnica);
-        ArrayList<Statement> stms = parser.parse();
+        ArrayList<ParseResult> stms = parser.parse();
 
-        // int maxSymbolLength = 0;
-        // int maxTokenLength = 0;
-
+        int maxSymbolLength = 0;
+        int maxTokenLength = 0;
         int maxStatementLength = 0;
 
         for (Statement stm : stms) {
@@ -183,9 +182,8 @@ public class Main extends JFrame {
 
         out.close();
 
+        out = new FileWriter("output_token.txt");
 
-
-        /*
         for (Token token : tokens) {
         	if (token.getType().equals("MULTI_COMMENT")) {
         		BufferedReader br = new BufferedReader(new StringReader(token.getSymbol()));
@@ -261,18 +259,31 @@ public class Main extends JFrame {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        };
+        }
 
         out.close();
-        */
     }
 
     public static void main(String[] args) {
         EventQueue.invokeLater(() -> {
             try {
-                Main frame = new Main();
-                frame.setVisible(true);
-                frame.setLocationRelativeTo(null);
+                // Main frame = new Main();
+                // frame.setVisible(true);
+                // frame.setLocationRelativeTo(null);
+
+                Language polytechnica = new Language("symbol_table.txt");
+                Lexer lexer = new Lexer(polytechnica, Files.readString(Paths.get("input.poly")).trim());
+                ArrayList<Token> tokens = lexer.generateTokens();
+                Parser parser = new Parser(tokens, polytechnica);
+                ArrayList<ParseResult> errors = parser.parse();
+
+                for (Token token : tokens) {
+                    // System.out.println("TOKEN: " + token.getSymbol() + " | LINE: " + token.getLine());
+                }
+
+                for (ParseResult error : errors) {
+                    System.out.println("Line " + error.getLine() + ": " + error.getMessage());
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }

@@ -55,7 +55,8 @@ public class Language {
         StringBuilder column = new StringBuilder();
         int charcode;
 
-        while ((charcode = reader.read()) == 9) {/* skip extra tabs */}
+        while ((charcode = reader.read()) == 9) {
+            /* skip extra tabs */}
 
         column.append(Character.toChars(charcode));
 
@@ -67,7 +68,13 @@ public class Language {
     }
 
     public Token token(String key) {
-        return this.symbolTable.get(key);
+        try {
+            return (Token) this.symbolTable.get(key).clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+            
+            return this.symbolTable.get(key);
+        }
     }
 
     public boolean isKeyword(String symbol) {

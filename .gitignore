@@ -1,2 +1,3 @@
 lib
-output.txt
+*.txt
+*.poly
