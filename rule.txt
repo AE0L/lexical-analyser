@@ -41,3 +41,10 @@ comp_stm    : COMP ( ) ;
 <arith_op>  : +, -, *, /, %, ^
 
 <rel_op>    : >, >=, <, <=, ==, <>
+
+
+semantic:
+* STR not allowed on IF condition
+* ARITHMETIC not allowed on IF condition
+
+* only NUMBER and ARITHMETIC are allowed on COIL condition

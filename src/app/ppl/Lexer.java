@@ -32,7 +32,7 @@ public class Lexer {
         ArrayList<Token> tokens = new ArrayList<>();
         Token token = this.nextToken();
 
-        while (!token.getType().equals("EOL") /*&& !token.getType().equals("INVALID")*/) {
+        while (!token.getType().equals("EOF") /* && !token.getType().equals("INVALID") */) {
             if (token.getType().equals("INVALID")) {
                 position += 1;
             }
@@ -42,7 +42,7 @@ public class Lexer {
             token = this.nextToken();
         }
 
-        if (token.getType().equals("EOL")) {
+        if (token.getType().equals("EOF")) {
             token.setLine(line);
             tokens.add(token);
         }
@@ -52,7 +52,7 @@ public class Lexer {
 
     public Token nextToken() {
         if (this.position >= this.input.length()) {
-            return new Token("EOL", "EOL", "End Of File");
+            return new Token("EOF", "EOF", "End Of File");
         }
 
         if (this.singleCommentOpen) {
@@ -95,7 +95,6 @@ public class Lexer {
             this.position += 1;
             return this.lang.token(";");
         }
-
 
         return new InvalidToken(Character.toString(currentChar), line);
     }
@@ -193,14 +192,21 @@ public class Lexer {
         this.position += 1;
 
         switch (currentChar) {
-            case '+': return this.lang.token("+");
-            case '-': return this.lang.token("-");
-            case '*': return this.lang.token("*");
-            case '/': return this.lang.token("/");
-            case '^': return this.lang.token("^");
-            case '%': return this.lang.token("%");
+            case '+':
+                return this.lang.token("+");
+            case '-':
+                return this.lang.token("-");
+            case '*':
+                return this.lang.token("*");
+            case '/':
+                return this.lang.token("/");
+            case '^':
+                return this.lang.token("^");
+            case '%':
+                return this.lang.token("%");
 
-            default: return new InvalidToken(Character.toString(currentChar), line);
+            default:
+                return new InvalidToken(Character.toString(currentChar), line);
         }
     }
 
@@ -213,7 +219,7 @@ public class Lexer {
         this.position += hasEqualNext ? 2 : 1;
 
         switch (currentChar) {
-            case '<': 
+            case '<':
                 if (nextChar == '>') {
                     this.position += 1;
 
@@ -221,10 +227,13 @@ public class Lexer {
                 }
 
                 return hasEqualNext ? this.lang.token(">=") : this.lang.token("<");
-            case '>': return hasEqualNext ? this.lang.token(">=") : this.lang.token(">");
-            case '=': return hasEqualNext ? this.lang.token("==") : this.lang.token("=");
+            case '>':
+                return hasEqualNext ? this.lang.token(">=") : this.lang.token(">");
+            case '=':
+                return hasEqualNext ? this.lang.token("==") : this.lang.token("=");
 
-            default: return new InvalidToken(Character.toString(currentChar), line);
+            default:
+                return new InvalidToken(Character.toString(currentChar), line);
         }
     }
 
@@ -259,10 +268,14 @@ public class Lexer {
         this.position += 1;
 
         switch (currentChar) {
-            case '(': return this.lang.token("(");
-            case ')': return this.lang.token(")");
-            case '{': return this.lang.token("{");
-            case '}': return this.lang.token("}");
+            case '(':
+                return this.lang.token("(");
+            case ')':
+                return this.lang.token(")");
+            case '{':
+                return this.lang.token("{");
+            case '}':
+                return this.lang.token("}");
             case '\'':
                 if (this.singleQuoteOpen && this.singleQuoteReady) {
                     this.singleQuoteOpen = false;
@@ -282,7 +295,8 @@ public class Lexer {
 
                 return this.lang.token("\"");
 
-            default: return new InvalidToken(Character.toString(currentChar), line);
+            default:
+                return new InvalidToken(Character.toString(currentChar), line);
         }
     }
 
@@ -372,5 +386,5 @@ public class Lexer {
 
         return new Token(comment.toString().strip(), "MULTI_COMMENT", "multi line comment");
     }
-    
+
 }

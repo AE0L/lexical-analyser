@@ -1,38 +1,18 @@
-int i;
-INT j;
-INT min;
-int temp;
-INT num = 10;
-int stop = 0;
-CHAR = a;
-COIL (10 REPS) {
-    IF (stop) {
-        arr[i] = 0;
-    } else {
-    arr [] = COMP ();
+BOOL x = TRUE;
+Int y = 10;
+STR = "hello";
+CHAR c = "test";
 
-    IF(arr == 0) {
-        stop=1;}
-    }
+IF (x && y) {
+    INT z = 10;
+    z = x + 5;
+    SHOW(z);
 }
-COIL(i=0; i<(num-1); i++)
-{
-    min=i;
-    for(j=i+1;j<num;j++)
-    {
-        IF(arr[min]>arr[j])
-        {min=j;}
+
+COIL ('c' REPS) {
+    shOW("Hello, World");
+
+    IF (z == 15) {
+        SHOW(z);
     }
-    IF(min != i)
-    {
-    temp=arr[i];
-    arr[i]=arr[min]
-    arr[min]=temp;
-}
-    }
-SHOW ("Ascending order list is:\n");
-COIL(i=0;i<num;i++)
-{
-    IF(arr[i] != 0)
-    SHOW("%d\n",arr[i]);
 }
