@@ -2,6 +2,7 @@ BOOL x = TRUE;
 Int y = 10;
 STR = "hello";
 CHAR c = "test";
+INT x = 10;
 
 IF (x && y) {
     INT z = 10;

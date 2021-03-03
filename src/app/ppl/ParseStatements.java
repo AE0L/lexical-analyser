@@ -247,6 +247,10 @@ public class ParseStatements {
         Token data_type = stm.get(0);
         Token ident = stm.get(1);
 
+        if (isVarDeclared(ident)) {
+            return new ParseResult(false, ident, "Variable '" + ident.getSymbol() + "' already declared");
+        }
+
         if (stm.size() > 3) {
             List<Token> exp = stm.subList(3, stm.size());
             ParseResult result = parseExpDataType(exp, data_type.getSymbol());
