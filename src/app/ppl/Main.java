@@ -1,13 +1,11 @@
 package app.ppl;
 
 import java.awt.Color;
-import java.awt.EventQueue;
 import java.awt.Font;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -34,7 +32,7 @@ public class Main extends JFrame {
 
     public Main() {
 
-        this.setTitle("Polytechnica Lexical Analyer");
+        this.setTitle("Polytechnica Semantic Analyer");
         this.setResizable(false);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -44,7 +42,7 @@ public class Main extends JFrame {
         this.setContentPane(panel);
         panel.setLayout(null);
 
-        JLabel poly = new JLabel("POLYTECHNICA LEXICAL ANALYZER");
+        JLabel poly = new JLabel("POLYTECHNICA SEMANTIC ANALYZER");
         poly.setForeground(Color.RED);
         poly.setBounds(210, 30, 550, 31);
         poly.setFont(new Font("Tahoma", Font.BOLD, 25));
@@ -101,7 +99,8 @@ public class Main extends JFrame {
         panel.add(analyze);
 
         openFile.addActionListener(event -> {
-
+            areaInput.setText("");
+            areaOutput.setText("");
             int response;
 
             JFileChooser chooser = new JFileChooser(".");
@@ -118,7 +117,15 @@ public class Main extends JFrame {
                 try {
                     FileReader read = new FileReader(path);
                     BufferedReader br = new BufferedReader(read);
-                    areaInput.read(br, null);
+                    String line;
+                    int i = 1;
+                    while ((line = br.readLine()) != null) {
+                        areaInput.append(Integer.toString(i));
+                        areaInput.append(".");
+                        areaInput.append("   " + line);
+                        areaInput.append("\n");
+                        i++;
+                    }
                     br.close();
                     areaInput.requestFocus();
                 } catch (Exception e1) {
@@ -133,9 +140,9 @@ public class Main extends JFrame {
         });
 
         analyze.addActionListener(event -> {
-
+            areaOutput.setText("");
             try {
-                valid(path);
+                semantic(path);
                 JOptionPane.showMessageDialog(null, "Successfully Analyzed.", "Analyzed",
                         JOptionPane.INFORMATION_MESSAGE);
             } catch (IOException e) {
@@ -266,33 +273,33 @@ public class Main extends JFrame {
         // out.close();
     }
 
-    public static void main(String[] args) {
-        EventQueue.invokeLater(() -> {
-            try {
-                // Main frame = new Main();
-                // frame.setVisible(true);
-                // frame.setLocationRelativeTo(null);
+    public void semantic(String file) throws IOException {
+        Language polytechnica = new Language("symbol_table.txt");
+        Lexer lexer = new Lexer(polytechnica, Files.readString(Paths.get(file)).trim());
+        ArrayList<Token> tokens = lexer.generateTokens();
+        Parser parser = new Parser(tokens, polytechnica);
+        ArrayList<ParseResult> errors = parser.parse();
 
-                Language polytechnica = new Language("symbol_table.txt");
-                Lexer lexer = new Lexer(polytechnica, Files.readString(Paths.get("input.poly")).trim());
-                ArrayList<Token> tokens = lexer.generateTokens();
-                Parser parser = new Parser(tokens, polytechnica);
-                ArrayList<ParseResult> errors = parser.parse();
+        for (Token token : tokens) {
+            // System.out.println("TOKEN: " + token.getSymbol() + " | LINE: " +
+            // token.getLine());
+        }
 
-                for (Token token : tokens) {
-                    // System.out.println("TOKEN: " + token.getSymbol() + " | LINE: " +
-                    // token.getLine());
-                }
-
-                for (ParseResult error : errors) {
-                    if (!error.isValid()) {
-                        System.out.println("Line " + error.getLine() + ": " + error.getMessage());
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
+        for (ParseResult error : errors) {
+            if (!error.isValid()) {
+                // System.out.println("Line " + error.getLine() + ": " + error.getMessage());
+                areaOutput.append("Line " + error.getLine() + ": " + error.getMessage());
+                areaOutput.append("\n");
             }
-        });
+        }
+    }
+
+    public static void main(String[] args) {
+
+        Main frame = new Main();
+        frame.setVisible(true);
+        frame.setLocationRelativeTo(null);
+
     }
 
 }

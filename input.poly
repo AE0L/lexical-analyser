@@ -1,19 +1,7 @@
-BOOL x = TRUE;
-Int y = 10;
-STR = "hello";
-CHAR c = "test";
-INT x = 10;
+INT x;
+INT y = 0;
+x = x + y;
 
-IF (x && y) {
-    INT z = 10;
-    z = x + 5;
-    SHOW(z);
-}
-
-COIL ('c' REPS) {
-    shOW("Hello, World");
-
-    IF (z == 15) {
-        SHOW(z);
-    }
+COIL (x REPS) {
+    SHOW(y);
 }

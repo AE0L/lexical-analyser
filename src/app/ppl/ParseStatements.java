@@ -327,6 +327,8 @@ public class ParseStatements {
                         if (!var.getData_type().getSymbol().equals(data_type)) {
                             return new ParseResult(false, term,
                                     "Data type mismatch '" + term.getSymbol() + "', expected a " + data_type);
+                        } else if (var.getExp() == null || var.getExp().isEmpty()) {
+                            return new ParseResult(false, term, "Variable has not been initialized yet");
                         }
                     }
                 }
@@ -419,7 +421,7 @@ public class ParseStatements {
                         if (var != null) {
                             String var_type = var.getData_type().getSymbol();
 
-                            if (var_type.equals("INT") && !var_type.equals("REAL") && !var_type.equals("BOOL")) {
+                            if (!var_type.equals("INT") && !var_type.equals("REAL") && !var_type.equals("BOOL")) {
                                 return new ParseResult(false, term, "Invalid variable");
                             }
                         }
@@ -470,16 +472,21 @@ public class ParseStatements {
         for (Token term : exp) {
             String type = term.getType();
 
-            if (!type.equals("NUMBER") && !type.equals("OPERATOR_ARITHMETIC") && !type.equals("IDENTIFIER")) {
+            if (!type.equals("NUMBER") && !type.equals("OPERATOR_ARITHMETIC") && !type.equals("IDENTIFIER")
+                    && !term.getSymbol().equals("REPS")) {
                 return new ParseResult(false, term, "Invalid COIL condition");
             } else if (type.equals("IDENTIFIER")) {
+                Variable var = getVar(term);
+
                 if (!isVarDeclared(term)) {
                     return new ParseResult(false, term, "Variable '" + term.getSymbol() + "' not yet declared");
+                } else if (var.getExp() == null || var.getExp().isEmpty()) {
+                    return new ParseResult(false, term, "Variable has not been initialized yet");
                 } else {
-                    Variable var = getVar(term);
+                    String var_type = var.getData_type().getSymbol();
 
                     if (var != null) {
-                        if (!var.getData_type().getType().equals("NUMBER")) {
+                        if (!var_type.equals("INT")) {
                             return new ParseResult(false, term, "Invalid variable");
                         }
                     }
